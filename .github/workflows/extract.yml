@@ -1,0 +1,34 @@
+name: Daily Email Extraction
+
+on:
+  schedule:
+    - cron: '0 9 * * *'       # هر روز ساعت 9 صبح UTC
+  workflow_dispatch:          # اجرای دستی از گیت‌هاب
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          sudo apt-get update
+          sudo apt-get install -y chromium-browser chromium-chromedriver
+
+      - name: Run extractor
+        env:
+          APPSERO_USER: ${{ secrets.APPSERO_USER }}
+          APPSERO_PASS: ${{ secrets.APPSERO_PASS }}
+          PROJECTS: ${{ secrets.PROJECTS }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ secrets.MONGODB_DB }}
+          MONGODB_COLLECTION: ${{ secrets.MONGODB_COLLECTION }}
+        run: python extractor.py
